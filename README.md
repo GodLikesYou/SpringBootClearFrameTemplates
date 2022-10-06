@@ -1,2 +1,0 @@
-# SpringBootClearFrameTemplates
-Graduation Design Project
