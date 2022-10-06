@@ -1,0 +1,118 @@
+server:
+  port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+
+spring:
+  # JDBC的配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #配置druid
+    druid:
+      # url 中填写你的MySQL连接的url 如 jdbc:mysql://(你的ip):(端口)/(数据库名称)?(以及其他的可加变量)
+      url:
+      # username 填写你的数据库用户名
+      username:
+      # 密码可以不用密文，如果不用密文就将ENC()删除，
+      # 如果用密文连接数据库的话，
+      # 就打开backend_common模块中的src/main/resources/shell/用jasypt加密数据库的明文，
+      # 在idea中直接运行该运行配置的运行选线。
+      # 并将加密的密码填写到ENC()的括号中。
+      password: ENC(这里是你要填写的加密后的密码)
+      initial-size: 5 # 初始化时建立物理连接的个数，默认为0
+      min-idle: 5 # 最小连接池数
+      max-active: 20 # 最大连接池数，默认为0
+      max-wait: 60000 # 获取连接时最大等待时间，单位毫秒
+      time-between-eviction-runs-millis: 60000 # 有两个含义：Destroy线程会检测连接的间隔时间testWhileIdle的判断依据，详细看testWhileIdle属性的说明。
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL # 用来检测连接是否有效的sql，要求是一个查询语句，如果validationQuery为null，testOnBorrow、testOnReturn、testWhileIdle都不起作用。
+      test-while-idle: true # 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunMills，执行validationQuery检测连接是否有效。
+      test-on-return: false # 归还连接时执行它validationQuery检测连接是否有效，做了这个配置会降低性能。
+      test-on-borrow: false # 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+      pool-prepared-statements: false # 是否缓存preparedStatement，也就是PsCache.但是在像Oracle和MySQL中建议关闭
+      max-pool-prepared-statement-per-connection-size: -1 # 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会出现Oracle下PSCache占用内存过多的问题，可以吧这个数值配置打一下。
+      filters: stat,wall,slf4j # 属性类型时字符串。通过别名的方式配置扩展插件，常用的插件有:监控统计用的filter：stat，日志用的filter：log4j，防御注入用的：filter：wall
+      filter:
+        stat:
+          merge-sql: true
+          slow-sql-millis: 50000
+        wall:
+          enabled: true # 开启SQL防火墙功能
+          config:
+            select-allow: true # 是否允许执行Select查询操作
+            delete-allow: true # 是否允许执行delete操作
+            create-table-allow: false # 是否允许创建表
+      use-global-data-source-stat: true
+      # StatViewServlet监控其。启动后，访问http://域名/druid/index.html。
+      stat-view-servlet:
+        enabled: true # 开启 StatViewServlet，即开启监控功能
+        login-username: admin # 访问监控页面时登录的账号
+        login-password: admin # 密码
+        url-pattern: /druid/* # Servlet的映射地址，不填写默认为”/druid/*“。如填写其他地址，访问监控页面时，要使用相应的地址。
+        reset-enable: false # 是否允许前置数据（在页面的重置按钮）。（停用后，依然会有重置按钮，但是重置按钮会无用也不会真的重置数据）。
+        # allow: 192.168.2.34  监控页面访问白名单。默认为127.0.0.1。与黑名单一样，支持子网掩码，如128.242.127.1/24。多个ip用英文逗号分隔
+      # 配置WebStaFilter （StatFilter监控其中的web模板）
+      web-stat-filter:
+        enabled: true # 开启WebStatFilter，即开启监控功能中的Web监控功能
+        url-pattern: /* # 映射地址，即统计指定地址的Web请求。
+        exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*' # 不统计的Web请求，如下时不统计静态资源及druid监控页面本身的请求。
+        session-stat-enable: true # 是否启用session统计
+        session-stat-max-count: 1 # session统计的最大个数，默认时1000。当统计超过这个数，只统计最新的。
+        principal-session-name: userName # 所存用户信息的session参数名。Druid会依照此参数名读取相应的session对应的用户名记录下来（在监控页面可已看的到）。如果指定参数不是基础数据类型，将会自动调用相应参数对象的toString方法来取值。
+        principal-cookie-name: userName #同上，但是这个时通过cookie名取到用户信息的。
+        profile-enable: true # 监控单个url调用的sql列表
+  main:
+    allow-bean-definition-overriding: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+mybatis-plus:
+  type-aliases-package: com.wang.backend_admin.model
+  #  config-location: classpath*:mybatis-config.xml
+  mapper-locations: classpath*:/mapper/*Mapper.xml
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: flag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+    aggressive-lazy-loading: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    use-column-label: true
+    use-generated-keys: false
+    auto-mapping-behavior: partial
+    auto-mapping-unknown-column-behavior: warning
+    default-executor-type: simple
+    default-statement-timeout: 25
+    default-fetch-size: 100
+    safe-row-bounds-enabled: false
+    local-cache-scope: session
+    jdbc-type-for-null: other
+    lazy-load-trigger-methods: equals,clone,hashCode,toString
+knife4j:
+  basic:
+    enable: true
+    username: admin
+    password: admin
+  production: false
+  enable: true
+  setting:
+    language: zh-CN
+
+

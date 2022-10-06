@@ -1,0 +1,94 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      # url 中填写你的MySQL连接的url 如 jdbc:mysql://(你的ip):(端口)/(数据库名称)?(以及其他的可加变量)
+      url:
+      # username 填写你的数据库用户名
+      username:
+      # 密码可以不用密文，如果不用密文就将ENC()删除，
+      # 如果用密文连接数据库的话，
+      # 就打开backend_common模块中的src/main/resources/shell/用jasypt加密数据库的明文，
+      # 在idea中直接运行该运行配置的运行选线。
+      # 并将加密的密码填写到ENC()的括号中。
+      password: ENC(这里是你要填写的加密后的密码)
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: false
+      max-pool-prepared-statement-per-connection-size: -1
+      filters: stat,wall,slf4j
+      filter:
+        stat:
+          merge-sql: true
+          slow-sql-millis: 5000
+        wall:
+          enabled: true
+          config:
+            select-allow: true
+            delete-allow: true
+            create-table-allow: false
+      use-global-data-source-stat: true
+      stat-view-servlet:
+        enabled: true
+        login-username: admin
+        login-password: admin
+        url-pattern: /druid/*
+        reset-enable: false
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*'
+        session-stat-enable: true
+        session-stat-max-count: 1
+        principal-session-name: userName
+        principal-cookie-name: userName
+        profile-enable: true
+  main:
+    allow-bean-definition-overriding: true
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/*Mapper.xml
+  type-aliases-package: com.wang.backend_common.model
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: flag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+    aggressive-lazy-loading: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    use-column-label: true
+    use-generated-keys: false
+    auto-mapping-behavior: partial
+    auto-mapping-unknown-column-behavior: warning
+    default-executor-type: simple
+    default-statement-timeout: 25
+    default-fetch-size: 100
+    safe-row-bounds-enabled: false
+    local-cache-scope: session
+    jdbc-type-for-null: other
+    lazy-load-trigger-methods: equals,clone,hashCode,toString
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    # 这里的设置是在你运行的时候添加的参数这里填的是你参数名称，
+    # 这里设置的是你加密密码时的解密的密钥
+    # 在使用这个密码时在 Java -jar (项目位置) (这里是该参数的位置)
+    # 例： java -jar (项目位置) JASYPT_ENCRYPTOR_PASSWORD=(填写你设置的密钥)
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
